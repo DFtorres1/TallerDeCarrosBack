@@ -22,7 +22,7 @@ const getReportsOut = async (req, res) => {
         [currentCar.idbrand]
       );
       const carModel = await pool.query(
-        "SELECT * FROM model WHERE idbrand = $1",
+        "SELECT * FROM model WHERE idmodel = $1",
         [currentCar.idmodel]
       );
 

@@ -6,7 +6,7 @@ const getReportsIn = async (req, res) => {
       SELECT r.* 
       FROM reportin r 
       LEFT JOIN reportout ro ON r.idrepin = ro.idrepin 
-      WHERE ro.idrepin IS NULL  
+      WHERE ro.idrepin IS NULL
     `);
 
     for (const report of response.rows) {
@@ -21,7 +21,7 @@ const getReportsIn = async (req, res) => {
         [currentCar.idbrand]
       );
       const carModel = await pool.query(
-        "SELECT * FROM model WHERE idbrand = $1",
+        "SELECT * FROM model WHERE idmodel = $1",
         [currentCar.idmodel]
       );
 
@@ -42,8 +42,21 @@ const addReportIn = async (req, res) => {
   const { plate, dni, inhour, reason } = req.body;
 
   try {
+    const existingReport = await pool.query(`
+      SELECT * 
+      FROM reportin r 
+      LEFT JOIN reportout ro ON r.idrepin = ro.idrepin 
+      WHERE r.plate = $1 AND ro.idrepin IS NULL
+    `, [plate]);
+
+    if (existingReport.rows.length > 0) {
+      return res.status(400).json({
+        error: "There is already a report with this plate in the waitlist"
+      })
+    }
+
     const response = await pool.query(
-      "INSERT INTO reportin (plate, dni, inhour, reason) VALUES ($1, $2, $3, $4)",
+      `INSERT INTO reportin (plate, dni, inhour, reason) VALUES ($1, $2, $3, $4)`,
       [plate, dni, inhour, reason]
     );
 
